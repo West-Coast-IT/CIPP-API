@@ -2,6 +2,18 @@ using namespace System.Net
 
 param($Request, $TriggerMetadata)
 
+if ($Request.Method -eq "GET") {
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::OK
+        Headers    = @{ "Content-Type" = "application/json" }
+        Body       = @{
+            status = "getRolesForUsers reachable via SWA"
+            note   = "POST is used by SWA rolesSource"
+        } | ConvertTo-Json -Depth 5
+    })
+    return
+}
+
 try {
     # Define allowed roles used by CIPP
     $allowedRoles = @(
