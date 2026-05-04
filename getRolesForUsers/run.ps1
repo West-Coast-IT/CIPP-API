@@ -3,6 +3,7 @@ using namespace System.Net
 param($Request, $TriggerMetadata)
 
 try {
+    # Define allowed roles used by CIPP
     $allowedRoles = @(
         "superadmin",
         "admin",
@@ -10,6 +11,14 @@ try {
         "readonly"
     )
 
+    # Support multiple possible Entra role claim types
+    $roleClaimTypes = @(
+        "roles",
+        "role",
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+    )
+
+    # Read request body from SWA
     $body = $Request.Body
 
     if (-not $body) {
@@ -21,16 +30,20 @@ try {
         return
     }
 
+    # Extract claims
     $claims = @($body.claims)
 
+    # Pull role values from claims
     $entraRoles = $claims |
-        Where-Object { $_.typ -eq "roles" -and $_.val } |
+        Where-Object { $_.typ -in $roleClaimTypes -and $_.val } |
         ForEach-Object { $_.val }
 
+    # Filter only allowed roles and remove duplicates
     $rolesToReturn = $entraRoles |
         Where-Object { $_ -in $allowedRoles } |
         Sort-Object -Unique
 
+    # Return roles in SWA format
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::OK
         Headers    = @{ "Content-Type" = "application/json" }
@@ -38,6 +51,7 @@ try {
     })
 }
 catch {
+    # Fail safe: return no roles rather than erroring
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::OK
         Headers    = @{ "Content-Type" = "application/json" }
