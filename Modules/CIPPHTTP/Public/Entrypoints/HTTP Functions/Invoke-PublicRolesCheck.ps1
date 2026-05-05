@@ -5,7 +5,16 @@ function Invoke-PublicRolesCheck {
     [CmdletBinding()]
     param(
         $Request,
-        $TriggerMetadata
+        $TriggerMetadata,
+
+        [string[]]$Roles = @(
+            'anonymous',
+            'authenticated',
+            'superadmin',
+            'admin',
+            'editor',
+            'readonly'
+        )
     )
 
     try {
