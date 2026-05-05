@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "Request",
       "methods": [ "get", "post" ],
-      "route": "getRolesForUsers"
+      "route": "PublicRolesCheck"
     },
     {
       "type": "http",
